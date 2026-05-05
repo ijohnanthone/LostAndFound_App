@@ -86,8 +86,8 @@ export default function NotificationsScreen() {
         <View style={styles.banner}>
           <Text style={styles.bannerTitle}>Manual admin matching is active</Text>
           <Text style={styles.bannerBody}>
-            No automatic bot matches are pushed here. Notifications appear only after an admin
-            reviews the item details and confirms a likely owner match.
+            Demonstration flow: a user sends a claim from the Community Board, the admin reviews the
+            answer, and an approval or rejection appears here.
           </Text>
         </View>
 

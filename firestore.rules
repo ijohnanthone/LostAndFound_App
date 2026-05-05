@@ -47,5 +47,15 @@ service cloud.firestore {
         (resource.data.userId == request.auth.uid || isAdmin());
       allow create, update, delete: if isAdmin();
     }
+
+    match /claimRequests/{claimId} {
+      allow read: if isSignedIn() &&
+        (resource.data.claimantUserId == request.auth.uid ||
+          resource.data.reportOwnerUserId == request.auth.uid ||
+          isAdmin());
+      allow create: if isSignedIn() &&
+        request.resource.data.claimantUserId == request.auth.uid;
+      allow update, delete: if isAdmin();
+    }
   }
 }

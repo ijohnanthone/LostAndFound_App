@@ -93,6 +93,7 @@ export function ReportForm({ type }: { type: ReportType }) {
         type,
         userId: user?.uid || null,
         userEmail: user?.email || contact.trim(),
+        userDisplayName: user?.displayName || "Community Member",
         status: isLost ? "Lost" : "Found",
         reviewStatus: "Pending Admin Review",
         createdAt: serverTimestamp(),

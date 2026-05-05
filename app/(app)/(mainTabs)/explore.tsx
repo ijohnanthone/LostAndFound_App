@@ -1,40 +1,61 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import {
+  Alert,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { DrawerActions, useNavigation } from "@react-navigation/native";
-import { collection, onSnapshot } from "firebase/firestore";
+import { addDoc, collection, onSnapshot, serverTimestamp } from "firebase/firestore";
 
 import { AppHeader } from "@/components/app/app-header";
+import { useAuth } from "@/contexts/auth-context";
 import { db } from "@/firebaseConfig";
 
 type BoardItem = {
   id: string;
   name: string;
   place: string;
+  description: string;
   status: string;
   source: "lost" | "found";
+  userId: string;
+  userEmail: string;
+  userDisplayName: string;
   createdAtMs: number;
   createdAtLabel: string;
 };
 
 export default function CommunityBoardScreen() {
   const navigation = useNavigation();
+  const { user } = useAuth();
   const [lostItems, setLostItems] = useState<BoardItem[]>([]);
   const [foundItems, setFoundItems] = useState<BoardItem[]>([]);
+  const [expandedClaimId, setExpandedClaimId] = useState<string | null>(null);
+  const [claimAnswer, setClaimAnswer] = useState("");
+  const [claimContact, setClaimContact] = useState(user?.email || "");
 
   useEffect(() => {
     const unsubLost = onSnapshot(collection(db, "lostItems"), (snapshot) => {
       setLostItems(
-        snapshot.docs.map((doc) => {
-          const data = doc.data();
+        snapshot.docs.map((entry) => {
+          const data = entry.data();
           const createdAt = data.createdAt?.toDate?.();
 
           return {
-            id: doc.id,
+            id: entry.id,
             name: data.name || "Unnamed item",
             place: data.place || "Unknown location",
+            description: data.description || "",
             status: data.reviewStatus || "Pending Admin Review",
             source: "lost",
+            userId: data.userId || "",
+            userEmail: data.userEmail || "",
+            userDisplayName: data.userDisplayName || "Community Member",
             createdAtMs: createdAt ? createdAt.getTime() : 0,
             createdAtLabel: createdAt ? createdAt.toLocaleString() : "Just now",
           };
@@ -44,16 +65,20 @@ export default function CommunityBoardScreen() {
 
     const unsubFound = onSnapshot(collection(db, "foundItems"), (snapshot) => {
       setFoundItems(
-        snapshot.docs.map((doc) => {
-          const data = doc.data();
+        snapshot.docs.map((entry) => {
+          const data = entry.data();
           const createdAt = data.createdAt?.toDate?.();
 
           return {
-            id: doc.id,
+            id: entry.id,
             name: data.name || "Unnamed item",
             place: data.place || "Unknown location",
+            description: data.description || "",
             status: data.reviewStatus || "Pending Admin Review",
             source: "found",
+            userId: data.userId || "",
+            userEmail: data.userEmail || "",
+            userDisplayName: data.userDisplayName || "Community Member",
             createdAtMs: createdAt ? createdAt.getTime() : 0,
             createdAtLabel: createdAt ? createdAt.toLocaleString() : "Just now",
           };
@@ -73,12 +98,53 @@ export default function CommunityBoardScreen() {
     [foundItems, lostItems]
   );
 
+  const handleClaim = async (item: BoardItem) => {
+    if (!user) {
+      Alert.alert("Sign in required", "Please sign in before sending a claim request.");
+      return;
+    }
+
+    if (!claimAnswer.trim()) {
+      Alert.alert("Missing answer", "Answer the verification prompt before sending your claim.");
+      return;
+    }
+
+    try {
+      await addDoc(collection(db, "claimRequests"), {
+        itemId: item.id,
+        itemType: item.source,
+        itemName: item.name,
+        itemPlace: item.place,
+        reportOwnerUserId: item.userId,
+        reportOwnerName: item.userDisplayName,
+        reportOwnerEmail: item.userEmail,
+        claimantUserId: user.uid,
+        claimantName: user.displayName || "Community Member",
+        claimantEmail: user.email || claimContact.trim(),
+        claimantContact: claimContact.trim() || user.email || "",
+        claimAnswer: claimAnswer.trim(),
+        status: "pending",
+        createdAt: serverTimestamp(),
+      });
+
+      Alert.alert(
+        "Claim sent",
+        "Your request is now visible in the admin dashboard for review."
+      );
+      setExpandedClaimId(null);
+      setClaimAnswer("");
+    } catch (error) {
+      console.error("Failed to create claim request:", error);
+      Alert.alert("Could not send claim", "Please try again in a moment.");
+    }
+  };
+
   return (
     <SafeAreaView style={styles.safeArea} edges={["top", "left", "right"]}>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <AppHeader
           title="Community Board"
-          subtitle="Live reports across lost and found collections"
+          subtitle="Browse items and send a simple ownership claim"
           rightBadgeText={String(mergedItems.length)}
           onMenuPress={() => navigation.dispatch(DrawerActions.openDrawer())}
         />
@@ -116,7 +182,9 @@ export default function CommunityBoardScreen() {
                   <Text
                     style={[
                       styles.sourceBadgeText,
-                      item.source === "lost" ? styles.sourceBadgeTextBlue : styles.sourceBadgeTextGreen,
+                      item.source === "lost"
+                        ? styles.sourceBadgeTextBlue
+                        : styles.sourceBadgeTextGreen,
                     ]}
                   >
                     {item.source === "lost" ? "Lost" : "Found"}
@@ -124,8 +192,62 @@ export default function CommunityBoardScreen() {
                 </View>
               </View>
               <Text style={styles.itemBody}>{item.place}</Text>
+              {item.description ? <Text style={styles.itemDescription}>{item.description}</Text> : null}
               <Text style={styles.itemStatus}>{item.status}</Text>
               <Text style={styles.itemDate}>{item.createdAtLabel}</Text>
+
+              {item.source === "found" && user?.uid !== item.userId ? (
+                <View style={styles.claimSection}>
+                  {expandedClaimId === item.id ? (
+                    <>
+                      <Text style={styles.claimTitle}>Claim this item</Text>
+                      <Text style={styles.claimBody}>
+                        Tell the admin one detail that only the real owner would know.
+                      </Text>
+                      <TextInput
+                        style={[styles.claimInput, styles.claimTextarea]}
+                        placeholder="Example: The wallet contains a student ID and a blue transit card."
+                        placeholderTextColor="#94A3B8"
+                        value={claimAnswer}
+                        onChangeText={setClaimAnswer}
+                        multiline
+                        textAlignVertical="top"
+                      />
+                      <TextInput
+                        style={styles.claimInput}
+                        placeholder="Best contact email or phone"
+                        placeholderTextColor="#94A3B8"
+                        value={claimContact}
+                        onChangeText={setClaimContact}
+                      />
+                      <View style={styles.claimButtonRow}>
+                        <TouchableOpacity
+                          style={styles.claimCancelButton}
+                          onPress={() => {
+                            setExpandedClaimId(null);
+                            setClaimAnswer("");
+                          }}
+                        >
+                          <Text style={styles.claimCancelText}>Cancel</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                          style={styles.claimPrimaryButton}
+                          onPress={() => handleClaim(item)}
+                        >
+                          <Text style={styles.claimPrimaryText}>Send Claim</Text>
+                        </TouchableOpacity>
+                      </View>
+                    </>
+                  ) : (
+                    <TouchableOpacity
+                      style={styles.claimPromptButton}
+                      onPress={() => setExpandedClaimId(item.id)}
+                    >
+                      <Text style={styles.claimPromptText}>This looks like mine</Text>
+                    </TouchableOpacity>
+                  )}
+                </View>
+              ) : null}
             </View>
           ))
         )}
@@ -222,6 +344,12 @@ const styles = StyleSheet.create({
     fontSize: 14,
     marginTop: 10,
   },
+  itemDescription: {
+    color: "#64748B",
+    fontSize: 13,
+    lineHeight: 20,
+    marginTop: 8,
+  },
   itemStatus: {
     color: "#C2410C",
     fontSize: 12,
@@ -232,5 +360,77 @@ const styles = StyleSheet.create({
     color: "#94A3B8",
     fontSize: 12,
     marginTop: 8,
+  },
+  claimSection: {
+    borderTopColor: "#E2E8F0",
+    borderTopWidth: 1,
+    marginTop: 14,
+    paddingTop: 14,
+  },
+  claimPromptButton: {
+    alignSelf: "flex-start",
+    backgroundColor: "#F97316",
+    borderRadius: 14,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+  },
+  claimPromptText: {
+    color: "#FFFFFF",
+    fontSize: 12,
+    fontWeight: "800",
+  },
+  claimTitle: {
+    color: "#111827",
+    fontSize: 15,
+    fontWeight: "800",
+  },
+  claimBody: {
+    color: "#64748B",
+    fontSize: 13,
+    lineHeight: 19,
+    marginTop: 6,
+    marginBottom: 10,
+  },
+  claimInput: {
+    backgroundColor: "#F8FAFC",
+    borderColor: "#E2E8F0",
+    borderRadius: 16,
+    borderWidth: 1,
+    color: "#0F172A",
+    fontSize: 14,
+    marginBottom: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+  },
+  claimTextarea: {
+    minHeight: 88,
+  },
+  claimButtonRow: {
+    flexDirection: "row",
+    gap: 10,
+  },
+  claimCancelButton: {
+    alignItems: "center",
+    backgroundColor: "#E2E8F0",
+    borderRadius: 14,
+    flex: 1,
+    paddingVertical: 12,
+  },
+  claimCancelText: {
+    color: "#334155",
+    fontSize: 13,
+    fontWeight: "700",
+  },
+  claimPrimaryButton: {
+    alignItems: "center",
+    backgroundColor: "#0F172A",
+    borderRadius: 14,
+    flex: 1,
+    paddingVertical: 12,
+  },
+  claimPrimaryText: {
+    color: "#FFFFFF",
+    fontSize: 13,
+    fontWeight: "800",
   },
 });

@@ -20,6 +20,14 @@ const nextImprovements = [
   "Move admin role assignment to a trusted backend script instead of the client path.",
 ];
 
+const demoFlow = [
+  "User A posts a found item.",
+  "User B opens Community Board and taps 'This looks like mine'.",
+  "User B submits a short proof answer and contact detail.",
+  "Admin reviews the claim card and taps Approve or Reject.",
+  "User B receives the result in Notifications with the next step.",
+];
+
 export default function SecurityScreen() {
   const navigation = useNavigation();
   const { user, role } = useAuth();
@@ -45,6 +53,15 @@ export default function SecurityScreen() {
         <View style={styles.listCard}>
           <Text style={styles.cardTitle}>Recommended legitimacy checks</Text>
           {trustChecks.map((feature) => (
+            <Text key={feature} style={styles.listItem}>
+              • {feature}
+            </Text>
+          ))}
+        </View>
+
+        <View style={styles.listCard}>
+          <Text style={styles.cardTitle}>Simple demo flow</Text>
+          {demoFlow.map((feature) => (
             <Text key={feature} style={styles.listItem}>
               • {feature}
             </Text>
