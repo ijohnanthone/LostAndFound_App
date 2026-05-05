@@ -21,6 +21,7 @@ type BoardItem = {
   name: string;
   place: string;
   description: string;
+  contact: string;
   status: string;
   source: "lost" | "found";
   userId: string;
@@ -28,6 +29,7 @@ type BoardItem = {
   userDisplayName: string;
   claimQuestion: string;
   verificationClue: string;
+  hasPhotoAttachment: boolean;
   createdAtMs: number;
   createdAtLabel: string;
 };
@@ -53,6 +55,7 @@ export default function CommunityBoardScreen() {
             name: data.name || "Unnamed item",
             place: data.place || "Unknown location",
             description: data.description || "",
+            contact: data.contact || data.userEmail || "No contact provided",
             status: data.reviewStatus || "Pending Admin Review",
             source: "lost",
             userId: data.userId || "",
@@ -60,6 +63,7 @@ export default function CommunityBoardScreen() {
             userDisplayName: data.userDisplayName || "Community Member",
             claimQuestion: data.claimQuestion || "Describe a detail only the owner would know.",
             verificationClue: data.verificationClue || "",
+            hasPhotoAttachment: Boolean(data.hasPhotoAttachment),
             createdAtMs: createdAt ? createdAt.getTime() : 0,
             createdAtLabel: createdAt ? createdAt.toLocaleString() : "Just now",
           };
@@ -78,6 +82,7 @@ export default function CommunityBoardScreen() {
             name: data.name || "Unnamed item",
             place: data.place || "Unknown location",
             description: data.description || "",
+            contact: data.contact || data.userEmail || "No contact provided",
             status: data.reviewStatus || "Pending Admin Review",
             source: "found",
             userId: data.userId || "",
@@ -85,6 +90,7 @@ export default function CommunityBoardScreen() {
             userDisplayName: data.userDisplayName || "Community Member",
             claimQuestion: data.claimQuestion || "Describe a detail only the owner would know.",
             verificationClue: data.verificationClue || "",
+            hasPhotoAttachment: Boolean(data.hasPhotoAttachment),
             createdAtMs: createdAt ? createdAt.getTime() : 0,
             createdAtLabel: createdAt ? createdAt.toLocaleString() : "Just now",
           };
@@ -121,11 +127,14 @@ export default function CommunityBoardScreen() {
         itemType: item.source,
         itemName: item.name,
         itemPlace: item.place,
+        reportDescription: item.description,
+        reportContact: item.contact,
         reportOwnerUserId: item.userId,
         reportOwnerName: item.userDisplayName,
         reportOwnerEmail: item.userEmail,
         claimQuestion: item.claimQuestion,
         expectedVerificationClue: item.verificationClue,
+        reportHasPhotoAttachment: item.hasPhotoAttachment,
         claimantUserId: user.uid,
         claimantName: user.displayName || "Community Member",
         claimantEmail: user.email || claimContact.trim(),

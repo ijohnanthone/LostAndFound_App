@@ -30,10 +30,13 @@ type ClaimRequest = {
   itemType: "lost" | "found";
   itemName: string;
   itemPlace: string;
+  reportDescription: string;
+  reportContact: string;
   reportOwnerName: string;
   reportOwnerEmail: string;
   claimQuestion: string;
   expectedVerificationClue: string;
+  reportHasPhotoAttachment: boolean;
   claimantUserId: string;
   claimantName: string;
   claimantEmail: string;
@@ -65,10 +68,13 @@ export default function AdminScreen() {
             itemType: data.itemType || "found",
             itemName: data.itemName || "Unknown item",
             itemPlace: data.itemPlace || "Unknown place",
+            reportDescription: data.reportDescription || "",
+            reportContact: data.reportContact || "No contact provided",
             reportOwnerName: data.reportOwnerName || "Community Member",
             reportOwnerEmail: data.reportOwnerEmail || "No email provided",
             claimQuestion: data.claimQuestion || "No stored question",
             expectedVerificationClue: data.expectedVerificationClue || "No stored clue",
+            reportHasPhotoAttachment: Boolean(data.reportHasPhotoAttachment),
             claimantUserId: data.claimantUserId || "",
             claimantName: data.claimantName || "Unknown claimant",
             claimantEmail: data.claimantEmail || "No email provided",
@@ -196,9 +202,16 @@ export default function AdminScreen() {
                   <Text style={styles.sectionLabel}>Claimant answer</Text>
                   <Text style={styles.answerBox}>{claim.claimAnswer}</Text>
 
-                  <Text style={styles.sectionLabel}>Finder / report contact</Text>
+                  <Text style={styles.sectionLabel}>Original found report</Text>
                   <Text style={styles.infoText}>
                     {claim.reportOwnerName} • {claim.reportOwnerEmail}
+                  </Text>
+                  <Text style={styles.infoText}>{claim.reportContact}</Text>
+                  {claim.reportDescription ? (
+                    <Text style={styles.reportBox}>{claim.reportDescription}</Text>
+                  ) : null}
+                  <Text style={styles.photoFlag}>
+                    {claim.reportHasPhotoAttachment ? "Photo was attached to report" : "No photo attached"}
                   </Text>
 
                   <Text style={styles.claimDate}>{claim.createdAtLabel}</Text>
@@ -361,6 +374,23 @@ const styles = StyleSheet.create({
     fontSize: 14,
     lineHeight: 20,
     padding: 14,
+  },
+  reportBox: {
+    backgroundColor: "#F8FAFC",
+    borderColor: "#E2E8F0",
+    borderRadius: 16,
+    borderWidth: 1,
+    color: "#0F172A",
+    fontSize: 14,
+    lineHeight: 20,
+    marginTop: 8,
+    padding: 14,
+  },
+  photoFlag: {
+    color: "#64748B",
+    fontSize: 12,
+    fontWeight: "700",
+    marginTop: 8,
   },
   claimDate: {
     color: "#94A3B8",
