@@ -26,6 +26,8 @@ type BoardItem = {
   userId: string;
   userEmail: string;
   userDisplayName: string;
+  claimQuestion: string;
+  verificationClue: string;
   createdAtMs: number;
   createdAtLabel: string;
 };
@@ -56,6 +58,8 @@ export default function CommunityBoardScreen() {
             userId: data.userId || "",
             userEmail: data.userEmail || "",
             userDisplayName: data.userDisplayName || "Community Member",
+            claimQuestion: data.claimQuestion || "Describe a detail only the owner would know.",
+            verificationClue: data.verificationClue || "",
             createdAtMs: createdAt ? createdAt.getTime() : 0,
             createdAtLabel: createdAt ? createdAt.toLocaleString() : "Just now",
           };
@@ -79,6 +83,8 @@ export default function CommunityBoardScreen() {
             userId: data.userId || "",
             userEmail: data.userEmail || "",
             userDisplayName: data.userDisplayName || "Community Member",
+            claimQuestion: data.claimQuestion || "Describe a detail only the owner would know.",
+            verificationClue: data.verificationClue || "",
             createdAtMs: createdAt ? createdAt.getTime() : 0,
             createdAtLabel: createdAt ? createdAt.toLocaleString() : "Just now",
           };
@@ -105,7 +111,7 @@ export default function CommunityBoardScreen() {
     }
 
     if (!claimAnswer.trim()) {
-      Alert.alert("Missing answer", "Answer the verification prompt before sending your claim.");
+      Alert.alert("Missing answer", "Answer the claim question before sending your request.");
       return;
     }
 
@@ -118,6 +124,8 @@ export default function CommunityBoardScreen() {
         reportOwnerUserId: item.userId,
         reportOwnerName: item.userDisplayName,
         reportOwnerEmail: item.userEmail,
+        claimQuestion: item.claimQuestion,
+        expectedVerificationClue: item.verificationClue,
         claimantUserId: user.uid,
         claimantName: user.displayName || "Community Member",
         claimantEmail: user.email || claimContact.trim(),
@@ -129,7 +137,7 @@ export default function CommunityBoardScreen() {
 
       Alert.alert(
         "Claim sent",
-        "Your request is now visible in the admin dashboard for review."
+        "Your claim is now waiting for admin verification."
       );
       setExpandedClaimId(null);
       setClaimAnswer("");
@@ -144,7 +152,7 @@ export default function CommunityBoardScreen() {
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <AppHeader
           title="Community Board"
-          subtitle="Browse items and send a simple ownership claim"
+          subtitle="Browse reports and claim an item if you are the owner"
           rightBadgeText={String(mergedItems.length)}
           onMenuPress={() => navigation.dispatch(DrawerActions.openDrawer())}
         />
@@ -201,12 +209,15 @@ export default function CommunityBoardScreen() {
                   {expandedClaimId === item.id ? (
                     <>
                       <Text style={styles.claimTitle}>Claim this item</Text>
+                      <Text style={styles.claimQuestionLabel}>Question from the finder</Text>
+                      <Text style={styles.claimQuestionBox}>{item.claimQuestion}</Text>
                       <Text style={styles.claimBody}>
-                        Tell the admin one detail that only the real owner would know.
+                        Answer carefully. The admin will compare your response with the hidden proof
+                        clue saved by the person who reported the item.
                       </Text>
                       <TextInput
                         style={[styles.claimInput, styles.claimTextarea]}
-                        placeholder="Example: The wallet contains a student ID and a blue transit card."
+                        placeholder="Type your answer here"
                         placeholderTextColor="#94A3B8"
                         value={claimAnswer}
                         onChangeText={setClaimAnswer}
@@ -384,11 +395,28 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: "800",
   },
+  claimQuestionLabel: {
+    color: "#334155",
+    fontSize: 12,
+    fontWeight: "800",
+    marginTop: 10,
+    marginBottom: 6,
+  },
+  claimQuestionBox: {
+    backgroundColor: "#FFF7ED",
+    borderColor: "#FED7AA",
+    borderRadius: 16,
+    borderWidth: 1,
+    color: "#9A3412",
+    fontSize: 14,
+    lineHeight: 20,
+    padding: 14,
+  },
   claimBody: {
     color: "#64748B",
     fontSize: 13,
     lineHeight: 19,
-    marginTop: 6,
+    marginTop: 10,
     marginBottom: 10,
   },
   claimInput: {

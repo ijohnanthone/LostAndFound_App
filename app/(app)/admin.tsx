@@ -32,6 +32,8 @@ type ClaimRequest = {
   itemPlace: string;
   reportOwnerName: string;
   reportOwnerEmail: string;
+  claimQuestion: string;
+  expectedVerificationClue: string;
   claimantUserId: string;
   claimantName: string;
   claimantEmail: string;
@@ -65,6 +67,8 @@ export default function AdminScreen() {
             itemPlace: data.itemPlace || "Unknown place",
             reportOwnerName: data.reportOwnerName || "Community Member",
             reportOwnerEmail: data.reportOwnerEmail || "No email provided",
+            claimQuestion: data.claimQuestion || "No stored question",
+            expectedVerificationClue: data.expectedVerificationClue || "No stored clue",
             claimantUserId: data.claimantUserId || "",
             claimantName: data.claimantName || "Unknown claimant",
             claimantEmail: data.claimantEmail || "No email provided",
@@ -133,16 +137,16 @@ export default function AdminScreen() {
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <AppHeader
           title="Admin Match Desk"
-          subtitle="Review claim requests and confirm ownership"
+          subtitle="Compare the expected proof with the claimant answer"
           rightBadgeText={role === "admin" ? "ADM" : "SAFE"}
           onMenuPress={() => navigation.dispatch(DrawerActions.openDrawer())}
         />
 
         <View style={styles.policyCard}>
-          <Text style={styles.policyTitle}>Simple testing flow</Text>
+          <Text style={styles.policyTitle}>How to validate a claim</Text>
           <Text style={styles.policyBody}>
-            Ask the tester to open Community Board, tap “This looks like mine” on a found item,
-            answer the proof question, then return here to approve or reject the claim.
+            Review the stored ownership question, the hidden verification clue, and the claimant’s
+            answer. Approve only when the answer clearly matches the expected proof.
           </Text>
         </View>
 
@@ -166,7 +170,7 @@ export default function AdminScreen() {
                 <Text style={styles.emptyTitle}>No pending claims</Text>
                 <Text style={styles.emptyBody}>
                   Once a user taps “This looks like mine” from the Community Board, the request will
-                  appear here with their name, contact, and ownership answer.
+                  appear here with the original question and the submitted answer.
                 </Text>
               </View>
             ) : (
@@ -183,13 +187,19 @@ export default function AdminScreen() {
                   </Text>
                   <Text style={styles.infoText}>{claim.claimantContact}</Text>
 
+                  <Text style={styles.sectionLabel}>Question shown to claimant</Text>
+                  <Text style={styles.questionBox}>{claim.claimQuestion}</Text>
+
+                  <Text style={styles.sectionLabel}>Expected proof clue</Text>
+                  <Text style={styles.expectedBox}>{claim.expectedVerificationClue}</Text>
+
+                  <Text style={styles.sectionLabel}>Claimant answer</Text>
+                  <Text style={styles.answerBox}>{claim.claimAnswer}</Text>
+
                   <Text style={styles.sectionLabel}>Finder / report contact</Text>
                   <Text style={styles.infoText}>
                     {claim.reportOwnerName} • {claim.reportOwnerEmail}
                   </Text>
-
-                  <Text style={styles.sectionLabel}>Claim answer</Text>
-                  <Text style={styles.answerBox}>{claim.claimAnswer}</Text>
 
                   <Text style={styles.claimDate}>{claim.createdAtLabel}</Text>
 
@@ -321,6 +331,26 @@ const styles = StyleSheet.create({
     color: "#475569",
     fontSize: 14,
     lineHeight: 20,
+  },
+  questionBox: {
+    backgroundColor: "#EFF6FF",
+    borderColor: "#BFDBFE",
+    borderRadius: 16,
+    borderWidth: 1,
+    color: "#1D4ED8",
+    fontSize: 14,
+    lineHeight: 20,
+    padding: 14,
+  },
+  expectedBox: {
+    backgroundColor: "#FFF7ED",
+    borderColor: "#FED7AA",
+    borderRadius: 16,
+    borderWidth: 1,
+    color: "#9A3412",
+    fontSize: 14,
+    lineHeight: 20,
+    padding: 14,
   },
   answerBox: {
     backgroundColor: "#F8FAFC",
