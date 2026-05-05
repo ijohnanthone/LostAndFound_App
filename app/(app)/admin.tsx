@@ -64,16 +64,16 @@ export default function AdminScreen() {
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <AppHeader
           title="Admin Match Desk"
-          subtitle="Manual review and user notification workflow"
-          rightBadgeText={role === "admin" ? "ADM" : "POL"}
+          subtitle="Manual review, claim checks, and owner confirmation"
+          rightBadgeText={role === "admin" ? "ADM" : "SAFE"}
           onMenuPress={() => navigation.dispatch(DrawerActions.openDrawer())}
         />
 
         <View style={styles.policyCard}>
-          <Text style={styles.policyTitle}>Centralized matching policy</Text>
+          <Text style={styles.policyTitle}>Verification checklist</Text>
           <Text style={styles.policyBody}>
-            The system does not auto-match items to users. Admins review details first, then send a
-            manual confirmation notice once the owner is identified.
+            Before releasing an item, confirm at least two proofs: a unique mark, a hidden detail
+            known only by the owner, and a matching photo or purchase reference when available.
           </Text>
         </View>
 
@@ -82,7 +82,7 @@ export default function AdminScreen() {
             <Text style={styles.lockedTitle}>Admin access required</Text>
             <Text style={styles.lockedBody}>
               Your account is currently a regular user account. To unlock this screen, change your
-              Firestore user document `role` field to `admin`.
+              Firestore user document `role` field to `admin` in Firebase Console for testing.
             </Text>
           </View>
         ) : (

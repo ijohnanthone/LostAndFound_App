@@ -22,11 +22,11 @@ export default function HomeHubScreen() {
         />
 
         <View style={styles.heroCard}>
-          <Text style={styles.heroEyebrow}>Authenticated Session Active</Text>
+          <Text style={styles.heroEyebrow}>Community Lost & Found</Text>
           <Text style={styles.heroTitle}>Welcome, {user?.displayName || "Community Member"}</Text>
           <Text style={styles.heroSubtitle}>
-            Existing sessions now skip login automatically, and admin-confirmed notifications are
-            routed through the dashboard instead of bot matching.
+            Report items, attach photos, and let an admin verify ownership before anything is
+            released to a claimant.
           </Text>
         </View>
 
@@ -58,16 +58,17 @@ export default function HomeHubScreen() {
             </Text>
           </View>
           <View style={styles.infoCard}>
-            <Text style={styles.infoTitle}>Drawer Dashboard</Text>
+            <Text style={styles.infoTitle}>Claim Protection</Text>
             <Text style={styles.infoBody}>
-              Use the hamburger menu to access notifications, admin review, and the security center.
+              Owners can be asked for hidden details, unique markings, or proof photos before an
+              item is returned.
             </Text>
           </View>
           <View style={styles.infoCard}>
-            <Text style={styles.infoTitle}>Security Tweaks Added</Text>
+            <Text style={styles.infoTitle}>Admin Review</Text>
             <Text style={styles.infoBody}>
-              Email/password auth, protected routes, persisted sessions, role-aware admin flow, and
-              draft Firestore rules.
+              Matches are confirmed by staff or moderators, then the rightful user receives a
+              direct notification.
             </Text>
           </View>
         </View>

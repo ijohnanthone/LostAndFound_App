@@ -6,22 +6,18 @@ import { DrawerActions, useNavigation } from "@react-navigation/native";
 import { AppHeader } from "@/components/app/app-header";
 import { useAuth } from "@/contexts/auth-context";
 
-const implementedFeatures = [
-  "Firebase email/password login and registration",
-  "Persistent session auto-login for returning users",
-  "Protected app routes behind authentication",
-  "Role-aware admin matching workflow",
-  "User-scoped in-app notifications",
-  "Draft Firestore security rules file added to the project",
+const trustChecks = [
+  "Ask the claimant to answer the hidden claim question saved in the report.",
+  "Compare unique identifiers like engravings, stickers, scratches, or bag contents.",
+  "Require a personal photo, receipt, or older screenshot for valuable items.",
+  "Release items only at a monitored handoff point and log which admin approved the claim.",
 ];
 
-const recommendedNextSteps = [
-  "Enable Firebase email verification before allowing reports",
-  "Store Expo push tokens and send real device notifications through Cloud Functions",
-  "Add per-user rate limiting for report creation",
-  "Add image upload validation and Storage security rules before photo support goes live",
-  "Promote admin privileges only through a trusted backend process, not client writes",
-  "Log security events such as sign-in failures and admin notification actions",
+const nextImprovements = [
+  "Enable email verification before users can submit sensitive or high-value reports.",
+  "Send real push notifications through Expo push tokens or Firebase Cloud Messaging.",
+  "Add Storage security rules so uploaded images are owner-scoped and admin-readable only.",
+  "Move admin role assignment to a trusted backend script instead of the client path.",
 ];
 
 export default function SecurityScreen() {
@@ -32,8 +28,8 @@ export default function SecurityScreen() {
     <SafeAreaView style={styles.safeArea} edges={["top", "left", "right"]}>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <AppHeader
-          title="Security Center"
-          subtitle="Trust and admin review safeguards"
+          title="Trust & Safety"
+          subtitle="How this prototype reduces false claims"
           rightBadgeText={role === "admin" ? "ADM" : "SAFE"}
           onMenuPress={() => navigation.dispatch(DrawerActions.openDrawer())}
         />
@@ -41,12 +37,14 @@ export default function SecurityScreen() {
         <View style={styles.profileCard}>
           <Text style={styles.cardTitle}>Active Account</Text>
           <Text style={styles.cardBody}>{user?.email}</Text>
-          <Text style={styles.cardTag}>{role === "admin" ? "Admin profile" : "Verified user profile"}</Text>
+          <Text style={styles.cardTag}>
+            {role === "admin" ? "Admin profile" : "Verified user profile"}
+          </Text>
         </View>
 
         <View style={styles.listCard}>
-          <Text style={styles.cardTitle}>Implemented now</Text>
-          {implementedFeatures.map((feature) => (
+          <Text style={styles.cardTitle}>Recommended legitimacy checks</Text>
+          {trustChecks.map((feature) => (
             <Text key={feature} style={styles.listItem}>
               • {feature}
             </Text>
@@ -54,8 +52,8 @@ export default function SecurityScreen() {
         </View>
 
         <View style={styles.listCard}>
-          <Text style={styles.cardTitle}>Recommended next security tweaks</Text>
-          {recommendedNextSteps.map((feature) => (
+          <Text style={styles.cardTitle}>Best next upgrades after the demo</Text>
+          {nextImprovements.map((feature) => (
             <Text key={feature} style={styles.listItem}>
               • {feature}
             </Text>
